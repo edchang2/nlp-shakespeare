@@ -33,11 +33,19 @@ class UnigramModel():
 
     # Add observed counts from corpus to the distribution
     def train(self, corpus):
-        pass
+        for sen in corpus:
+            sen = sen.split(" ")
+            for word in sen:
+                if word == START_TAG:
+                    continue
+                self.counts[word] += 1.0
+                self.total += 1
+
+
 
     # Returns the probability of word in the distribution
     def prob(self, word):
-        pass
+        return self.counts[word]/self.total
 
     # Generate a single random word according to the distribution
     def draw(self):
@@ -48,7 +56,15 @@ class UnigramModel():
                     return word
 
     def generateSentence(self):
-        pass
+        sentence = [START_TAG]
+        word = START_TAG
+        while word != END_TAG:
+            word = self.draw()
+            sentence.append(word)
+
+        sentence = " ".join(sentence)
+
+        return sentence
 
 '''
 Bigram language model
@@ -66,11 +82,22 @@ class BigramModel():
 
     # Add observed counts from corpus to the distribution
     def train(self, corpus):
-        pass
+        for sen in corpus:
+            sen = sen.split(" ")
+
+            for i in range(len(sen) - 1):
+                key = (sen[i], sen[i+1])
+                self.counts[key] += 1.0
+                self.total += 1.0
+                #is the unigram model on the bottom
+                self.context[key[0]] += 1.0
+                self.context[" "] += 1.0
+
+
 
     # Returns the probability of a bigram in the distribution
     def prob(self, word1, word2):
-        pass
+        return self.counts[(word1, word2)]/self.context[word1]
 
     # Given the previous word, generate a single random word according to the distribution
     def draw(self, prev_word):
@@ -84,7 +111,16 @@ class BigramModel():
 
     # Generate a single a sentence according to the distribution
     def generateSentence(self):
-        pass
+        sentence = [START_TAG]
+        prev_word, word = START_TAG, ""
+
+        while word != END_TAG:
+            word = self.draw(prev_word)
+            sentence.append(word)
+            prev_word = word
+        sentence = " ".join(sentence)
+
+        return sentence
 
 def main():
     corpus = preprocess("shakespeare/j_caesar.xml")
@@ -98,3 +134,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
